@@ -227,7 +227,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
                         boxShadow: '0 4px 20px rgba(124, 58, 237, 0.35)',
                     }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => addToCart(product)}
+                    onClick={(e) => { e.stopPropagation(); addToCart(product); }}
                     style={{
                         width: '100%',
                         marginTop: '14px',
