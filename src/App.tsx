@@ -1,25 +1,40 @@
 import React from 'react';
-import logo from './logo.svg';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { StoreProvider } from './store';
+import Navigation from './components/Navigation';
+import CartDrawer from './components/CartDrawer';
+import Toast from './components/Toast';
+import PromoBar from './components/PromoBar';
+import HomePage from './pages/HomePage';
+import ShopPage from './pages/ShopPage';
+import ProductDetailPage from './pages/ProductDetailPage';
+import WishlistPage from './pages/WishlistPage';
+import DealsPage from './pages/DealsPage';
+
+import SearchPage from './pages/SearchPage';
 import './App.css';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <StoreProvider>
+      <Router>
+        <div className="App">
+          <PromoBar />
+          <Navigation />
+          <CartDrawer />
+          <Toast />
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/shop" element={<ShopPage />} />
+            <Route path="/product/:id" element={<ProductDetailPage />} />
+            <Route path="/wishlist" element={<WishlistPage />} />
+            <Route path="/deals" element={<DealsPage />} />
+
+            <Route path="/search" element={<SearchPage />} />
+          </Routes>
+        </div>
+      </Router>
+    </StoreProvider>
   );
 }
 

@@ -1,38 +1,30 @@
 .App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  background-color: var(--bg-primary);
 }
 
-.App-link {
-  color: #61dafb;
+/* Smooth page transitions */
+.App>* {
+  animation: fadeIn 0.3s ease-out;
 }
 
-@keyframes App-logo-spin {
+@keyframes fadeIn {
   from {
-    transform: rotate(0deg);
+    opacity: 0;
   }
+
   to {
-    transform: rotate(360deg);
+    opacity: 1;
   }
+}
+
+/* Fix for select dropdown styling */
+select option {
+  background: #0f0f2a;
+  color: #f1f5f9;
+}
+
+/* Link hover states for footer */
+footer a:hover {
+  color: #a855f7 !important;
 }
