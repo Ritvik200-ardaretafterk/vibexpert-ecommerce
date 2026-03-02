@@ -1,14 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../store';
+import { useAuth } from '../AuthContext';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 const Navigation: React.FC = () => {
   const { cartCount, setCartOpen, state } = useStore();
+  const { user, isAuthenticated, logout } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -234,30 +237,133 @@ const Navigation: React.FC = () => {
               )}
             </motion.button>
 
-            {/* Login — vibexpert.online */}
-            <motion.a
-              href="https://www.vibexpert.online"
-              target="_blank"
-              rel="noopener noreferrer"
-              whileHover={{ scale: 1.03, boxShadow: '0 4px 20px rgba(124,58,237,0.35)' }}
-              whileTap={{ scale: 0.97 }}
-              style={{
-                padding: '7px 18px',
-                background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
-                color: 'white',
-                borderRadius: '8px',
-                fontWeight: 600,
-                fontSize: '0.82rem',
-                textDecoration: 'none',
-                cursor: 'pointer',
-                border: 'none',
-                marginLeft: '4px',
-              }}
-              className="desktop-login"
-              id="login-button"
-            >
-              Login
-            </motion.a>
+            {/* User Menu / Login */}
+            {isAuthenticated && user ? (
+              <div style={{ position: 'relative', marginLeft: '4px' }}>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
+                    color: 'white',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '0.85rem',
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 2px 12px rgba(124,58,237,0.3)',
+                  }}
+                  className="desktop-login"
+                  id="user-avatar-button"
+                >
+                  {user.profile_pic ? (
+                    <img
+                      src={user.profile_pic}
+                      alt={user.username}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        borderRadius: '50%',
+                        objectFit: 'cover',
+                      }}
+                    />
+                  ) : (
+                    user.username.charAt(0).toUpperCase()
+                  )}
+                </motion.button>
+
+                <AnimatePresence>
+                  {userMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                      style={{
+                        position: 'absolute',
+                        top: 'calc(100% + 8px)',
+                        right: 0,
+                        minWidth: '200px',
+                        background: 'rgba(10, 10, 32, 0.98)',
+                        border: '1px solid rgba(124,58,237,0.2)',
+                        borderRadius: '14px',
+                        padding: '12px',
+                        backdropFilter: 'blur(20px)',
+                        boxShadow: '0 15px 50px rgba(0,0,0,0.5)',
+                        zIndex: 2000,
+                      }}
+                    >
+                      <div
+                        style={{
+                          padding: '8px 12px',
+                          borderBottom: '1px solid rgba(148,163,184,0.1)',
+                          marginBottom: '8px',
+                        }}
+                      >
+                        <div style={{ color: '#f1f5f9', fontWeight: 600, fontSize: '0.9rem' }}>
+                          👋 Hi, {user.username}!
+                        </div>
+                        <div style={{ color: '#64748b', fontSize: '0.75rem', marginTop: '2px' }}>
+                          {user.email}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          logout();
+                          setUserMenuOpen(false);
+                        }}
+                        style={{
+                          width: '100%',
+                          padding: '10px 12px',
+                          background: 'rgba(239,68,68,0.1)',
+                          border: '1px solid rgba(239,68,68,0.2)',
+                          borderRadius: '10px',
+                          color: '#f87171',
+                          fontSize: '0.85rem',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                        }}
+                      >
+                        🚪 Logout
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <motion.a
+                href="https://www.vibexpert.online"
+                target="_blank"
+                rel="noopener noreferrer"
+                whileHover={{ scale: 1.03, boxShadow: '0 4px 20px rgba(124,58,237,0.35)' }}
+                whileTap={{ scale: 0.97 }}
+                style={{
+                  padding: '7px 18px',
+                  background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
+                  color: 'white',
+                  borderRadius: '8px',
+                  fontWeight: 600,
+                  fontSize: '0.82rem',
+                  textDecoration: 'none',
+                  cursor: 'pointer',
+                  border: 'none',
+                  marginLeft: '4px',
+                }}
+                className="desktop-login"
+                id="login-button"
+              >
+                Login
+              </motion.a>
+            )}
 
             {/* Mobile Menu Toggle */}
             <motion.button
@@ -433,30 +539,72 @@ const Navigation: React.FC = () => {
                 ))}
               </div>
 
-              {/* Login Button */}
+              {/* Login / User Button */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.35 }}
               >
-                <a
-                  href="https://www.vibexpert.online"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: 'block',
-                    textAlign: 'center',
-                    padding: '14px',
-                    background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
-                    color: 'white',
-                    borderRadius: '12px',
-                    fontWeight: 600,
-                    textDecoration: 'none',
-                    fontSize: '0.95rem',
-                  }}
-                >
-                  Login on VibExpert →
-                </a>
+                {isAuthenticated && user ? (
+                  <>
+                    <div
+                      style={{
+                        padding: '12px 16px',
+                        background: 'rgba(124,58,237,0.1)',
+                        borderRadius: '12px',
+                        marginBottom: '8px',
+                        border: '1px solid rgba(124,58,237,0.15)',
+                      }}
+                    >
+                      <div style={{ color: '#f1f5f9', fontWeight: 600, fontSize: '0.95rem' }}>
+                        👋 Hi, {user.username}!
+                      </div>
+                      <div style={{ color: '#64748b', fontSize: '0.8rem', marginTop: '4px' }}>
+                        {user.email}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        logout();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      style={{
+                        display: 'block',
+                        width: '100%',
+                        textAlign: 'center',
+                        padding: '14px',
+                        background: 'rgba(239,68,68,0.15)',
+                        border: '1px solid rgba(239,68,68,0.25)',
+                        color: '#f87171',
+                        borderRadius: '12px',
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      🚪 Logout
+                    </button>
+                  </>
+                ) : (
+                  <a
+                    href="https://www.vibexpert.online"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'block',
+                      textAlign: 'center',
+                      padding: '14px',
+                      background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
+                      color: 'white',
+                      borderRadius: '12px',
+                      fontWeight: 600,
+                      textDecoration: 'none',
+                      fontSize: '0.95rem',
+                    }}
+                  >
+                    Login on VibExpert →
+                  </a>
+                )}
               </motion.div>
             </motion.div>
           </>
