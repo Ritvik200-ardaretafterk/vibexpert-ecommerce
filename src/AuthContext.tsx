@@ -16,6 +16,7 @@ interface AuthContextType {
     user: User | null;
     isAuthenticated: boolean;
     isLoading: boolean;
+    cameFromSSO: boolean;
     logout: () => void;
 }
 
@@ -23,6 +24,7 @@ const AuthContext = createContext<AuthContextType>({
     user: null,
     isAuthenticated: false,
     isLoading: true,
+    cameFromSSO: false,
     logout: () => { },
 });
 
@@ -31,6 +33,7 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [cameFromSSO, setCameFromSSO] = useState(false);
 
     // Check for SSO token in URL on mount
     useEffect(() => {
@@ -54,9 +57,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         localStorage.setItem('shop_auth_token', data.token);
                         localStorage.setItem('shop_user', JSON.stringify(data.user));
                         setUser(data.user);
+                        setCameFromSSO(true);
 
-                        // Clean the URL (remove sso_token param)
-                        const cleanUrl = window.location.origin + window.location.pathname;
+                        // Clean the URL (remove sso_token param) and redirect to /shop
+                        const cleanUrl = window.location.origin + '/shop';
                         window.history.replaceState({}, document.title, cleanUrl);
                     }
                 } catch (error) {
@@ -87,6 +91,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.removeItem('shop_auth_token');
         localStorage.removeItem('shop_user');
         setUser(null);
+        setCameFromSSO(false);
     }, []);
 
     return (
@@ -95,6 +100,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 user,
                 isAuthenticated: !!user,
                 isLoading,
+                cameFromSSO,
                 logout,
             }}
         >
