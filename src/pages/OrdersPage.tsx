@@ -19,7 +19,7 @@ interface Order {
 }
 
 const OrdersPage: React.FC = () => {
-    const { user, isAuthenticated } = useAuth();
+    const { isAuthenticated } = useAuth();
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
 
