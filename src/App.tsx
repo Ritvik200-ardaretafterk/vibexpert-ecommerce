@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { StoreProvider } from './store';
 import { AuthProvider, useAuth } from './AuthContext';
 import Navigation from './components/Navigation';
@@ -18,7 +18,7 @@ import './App.css';
 
 // Inner app component that can use auth context
 const AppContent: React.FC = () => {
-  const { isLoading, cameFromSSO } = useAuth();
+  const { isLoading } = useAuth();
 
   // Show loading spinner ONLY while checking SSO token from URL
   if (isLoading) {
