@@ -66,7 +66,7 @@ const AppContent: React.FC = () => {
         <CartDrawer />
         <Toast />
         <Routes>
-          <Route path="/" element={cameFromSSO ? <Navigate to="/shop" replace /> : <HomePage />} />
+          <Route path="/" element={<HomePage />} />
           <Route path="/shop" element={<ShopPage />} />
           <Route path="/product/:id" element={<ProductDetailPage />} />
           <Route path="/wishlist" element={<WishlistPage />} />
