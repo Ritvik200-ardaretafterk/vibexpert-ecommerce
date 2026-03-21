@@ -5,7 +5,36 @@ import ProductCard from '../components/ProductCard';
 import Footer from '../components/Footer';
 
 const DealsPage: React.FC = () => {
-    const deals = getDeals();
+    const [deals, setDeals] = React.useState<any[]>(getDeals());
+
+    React.useEffect(() => {
+        fetch('https://vibexpert-backend-main.onrender.com/api/shop/client-products')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.products) {
+                    const mapped = data.products
+                        .filter((p: any) => p.badge === 'sale' || (p.discountPercent > 0))
+                        .map((p: any) => ({
+                            id: p.id || p._id,
+                            name: p.name,
+                            price: p.price,
+                            originalPrice: p.originalPrice || p.price,
+                            description: p.description,
+                            category: p.category,
+                            image: p.image || p.images?.[0]?.url || 'https://via.placeholder.com/600',
+                            images: p.images?.map((img: any) => img.url) || [],
+                            rating: p.rating || 5.0,
+                            reviews: p.reviews || 0,
+                            badge: p.badge || 'sale',
+                            colors: p.colors || [],
+                            sizes: p.sizes || [],
+                            inStock: p.inStock !== false
+                        }));
+                    setDeals(mapped);
+                }
+            })
+            .catch(console.error);
+    }, []);
 
     return (
         <div style={{ paddingTop: '20px', minHeight: '100vh' }}>
