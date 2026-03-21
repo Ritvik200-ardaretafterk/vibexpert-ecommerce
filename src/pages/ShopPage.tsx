@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useSearchParams } from 'react-router-dom';
-import { products, categories } from '../data';
+import { categories } from '../data';
 import ProductCard from '../components/ProductCard';
 import Footer from '../components/Footer';
 
@@ -42,7 +42,7 @@ const ShopPage: React.FC = () => {
     }, []);
 
     const filteredProducts = useMemo(() => {
-        let result = [...products, ...liveProducts];
+        let result = [...liveProducts];
 
         // Category filter
         if (selectedCategory) {

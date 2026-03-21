@@ -1,11 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { getDeals } from '../data';
 import ProductCard from '../components/ProductCard';
 import Footer from '../components/Footer';
 
 const DealsPage: React.FC = () => {
-    const [deals, setDeals] = React.useState<any[]>(getDeals());
+    const [deals, setDeals] = React.useState<any[]>([]);
 
     React.useEffect(() => {
         fetch('https://vibexpert-backend-main.onrender.com/api/shop/client-products')

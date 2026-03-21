@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { getProductById, products } from '../data';
 import { useStore } from '../store';
 import ProductCard from '../components/ProductCard';
 import Footer from '../components/Footer';
@@ -11,18 +10,20 @@ const ProductDetailPage: React.FC = () => {
     const navigate = useNavigate();
     const { addToCart, toggleWishlist, isInWishlist } = useStore();
     
-    const [product, setProduct] = useState<any>(getProductById(Number(id)) || getProductById(id || ''));
-    const [loadingLive, setLoadingLive] = useState(!product);
+    const [product, setProduct] = useState<any>(null);
+    const [loadingLive, setLoadingLive] = useState(true);
+    const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
 
     React.useEffect(() => {
-        if (!product && id) {
+        setLoadingLive(true);
+        if (id) {
             fetch('https://vibexpert-backend-main.onrender.com/api/shop/client-products')
                 .then(res => res.json())
                 .then(data => {
                     if (data.success && data.products) {
                         const found = data.products.find((p: any) => String(p._id) === String(id) || String(p.id) === String(id));
                         if (found) {
-                            setProduct({
+                            const mapped = {
                                 id: found._id || found.id,
                                 name: found.name,
                                 price: found.price,
@@ -37,7 +38,29 @@ const ProductDetailPage: React.FC = () => {
                                 colors: found.colors || [],
                                 sizes: found.sizes || [],
                                 inStock: found.inStock !== false
-                            });
+                            };
+                            setProduct(mapped);
+                            // Set related products from same category
+                            const related = data.products
+                                .filter((p: any) => p.category === found.category && String(p._id || p.id) !== String(id))
+                                .slice(0, 4)
+                                .map((p: any) => ({
+                                    id: p._id || p.id,
+                                    name: p.name,
+                                    price: p.price,
+                                    originalPrice: p.originalPrice || p.price,
+                                    description: p.description,
+                                    category: p.category,
+                                    image: p.image || p.images?.[0]?.url || 'https://via.placeholder.com/600',
+                                    images: p.images?.map((img: any) => img.url) || [],
+                                    rating: p.rating || 5.0,
+                                    reviews: p.reviews || 0,
+                                    badge: p.badge || null,
+                                    colors: p.colors || [],
+                                    sizes: p.sizes || [],
+                                    inStock: p.inStock !== false
+                                }));
+                            setRelatedProducts(related);
                         }
                     }
                 })
@@ -45,7 +68,7 @@ const ProductDetailPage: React.FC = () => {
         } else {
             setLoadingLive(false);
         }
-    }, [id, product]);
+    }, [id]);
 
     const [selectedColor, setSelectedColor] = useState<string>('');
     const [selectedSize, setSelectedSize] = useState<string>('');
@@ -82,9 +105,6 @@ const ProductDetailPage: React.FC = () => {
     }
 
     const discount = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
-    const relatedProducts = products
-        .filter(p => p.category === product.category && p.id !== product.id)
-        .slice(0, 4);
 
     const renderStars = (rating: number) => {
         return Array.from({ length: 5 }, (_, i) => (

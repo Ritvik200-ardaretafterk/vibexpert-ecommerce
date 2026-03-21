@@ -112,6 +112,7 @@ const CartDrawer: React.FC = () => {
             // 1. Create order on backend
             const items = state.cart.map(item => ({
                 id: item.product.id,
+                productId: item.product.id,
                 name: item.product.name,
                 price: item.product.price,
                 quantity: item.quantity,

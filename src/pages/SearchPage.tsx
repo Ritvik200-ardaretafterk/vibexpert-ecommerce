@@ -1,25 +1,27 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useSearchParams } from 'react-router-dom';
-import { searchProducts } from '../data';
 import ProductCard from '../components/ProductCard';
 import Footer from '../components/Footer';
 
 const SearchPage: React.FC = () => {
     const [searchParams] = useSearchParams();
     const query = searchParams.get('q') || '';
-    const [results, setResults] = React.useState<any[]>(searchProducts(query));
+    const [results, setResults] = React.useState<any[]>([]);
+    const [loading, setLoading] = React.useState(true);
 
     React.useEffect(() => {
+        setLoading(true);
         fetch('https://vibexpert-backend-main.onrender.com/api/shop/client-products')
             .then(res => res.json())
             .then(data => {
                 if (data.success && data.products) {
+                    const q = query.toLowerCase();
                     const newProducts = data.products
                         .filter((p: any) => 
-                            p.name?.toLowerCase().includes(query) || 
-                            p.description?.toLowerCase().includes(query) || 
-                            p.category?.toLowerCase().includes(query)
+                            p.name?.toLowerCase().includes(q) || 
+                            p.description?.toLowerCase().includes(q) || 
+                            p.category?.toLowerCase().includes(q)
                         )
                         .map((p: any) => ({
                             id: p.id || p._id,
@@ -38,10 +40,11 @@ const SearchPage: React.FC = () => {
                             inStock: p.inStock !== false
                         }));
                     
-                    setResults([...searchProducts(query), ...newProducts]);
+                    setResults(newProducts);
                 }
             })
-            .catch(console.error);
+            .catch(console.error)
+            .finally(() => setLoading(false));
     }, [query]);
 
     return (
