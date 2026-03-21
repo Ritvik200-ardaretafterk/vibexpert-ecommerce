@@ -150,8 +150,8 @@ export const getProductsByCategory = (categoryId: string): Product[] => {
     return products.filter(p => p.category === categoryId);
 };
 
-export const getProductById = (id: number): Product | undefined => {
-    return products.find(p => p.id === id);
+export const getProductById = (id: number | string): Product | undefined | any => {
+    return products.find(p => p.id === id || String(p.id) === String(id));
 };
 
 export const searchProducts = (query: string): Product[] => {

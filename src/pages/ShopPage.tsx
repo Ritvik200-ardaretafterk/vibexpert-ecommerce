@@ -13,9 +13,36 @@ const ShopPage: React.FC = () => {
     const [sortBy, setSortBy] = useState('popular');
     const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [liveProducts, setLiveProducts] = useState<any[]>([]);
+
+    React.useEffect(() => {
+        fetch('https://vibexpert-backend-main.onrender.com/api/shop/client-products')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.products) {
+                    const newProducts = data.products.map((p: any) => ({
+                        id: p.id || p._id,
+                        name: p.name,
+                        price: p.price,
+                        originalPrice: p.originalPrice || p.price,
+                        description: p.description,
+                        category: p.category,
+                        image: p.image || p.images?.[0]?.url || 'https://via.placeholder.com/600',
+                        images: p.images?.map((img: any) => img.url) || [],
+                        rating: p.rating || 5.0,
+                        reviews: p.reviews || 0,
+                        badge: p.badge || null,
+                        colors: p.colors || [],
+                        inStock: p.inStock !== false
+                    }));
+                    setLiveProducts(newProducts);
+                }
+            })
+            .catch(console.error);
+    }, []);
 
     const filteredProducts = useMemo(() => {
-        let result = [...products];
+        let result = [...products, ...liveProducts];
 
         // Category filter
         if (selectedCategory) {
@@ -44,7 +71,7 @@ const ShopPage: React.FC = () => {
         }
 
         return result;
-    }, [selectedCategory, sortBy, priceRange]);
+    }, [selectedCategory, sortBy, priceRange, liveProducts]);
 
     return (
         <div style={{ paddingTop: '20px', minHeight: '100vh' }}>

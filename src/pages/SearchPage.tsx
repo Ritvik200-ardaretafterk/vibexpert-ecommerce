@@ -8,7 +8,41 @@ import Footer from '../components/Footer';
 const SearchPage: React.FC = () => {
     const [searchParams] = useSearchParams();
     const query = searchParams.get('q') || '';
-    const results = searchProducts(query);
+    const [results, setResults] = React.useState<any[]>(searchProducts(query));
+
+    React.useEffect(() => {
+        fetch('https://vibexpert-backend-main.onrender.com/api/shop/client-products')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.products) {
+                    const newProducts = data.products
+                        .filter((p: any) => 
+                            p.name?.toLowerCase().includes(query) || 
+                            p.description?.toLowerCase().includes(query) || 
+                            p.category?.toLowerCase().includes(query)
+                        )
+                        .map((p: any) => ({
+                            id: p.id || p._id,
+                            name: p.name,
+                            price: p.price,
+                            originalPrice: p.originalPrice || p.price,
+                            description: p.description,
+                            category: p.category,
+                            image: p.image || p.images?.[0]?.url || 'https://via.placeholder.com/600',
+                            images: p.images?.map((img: any) => img.url) || [],
+                            rating: p.rating || 5.0,
+                            reviews: p.reviews || 0,
+                            badge: p.badge || null,
+                            colors: p.colors || [],
+                            sizes: p.sizes || [],
+                            inStock: p.inStock !== false
+                        }));
+                    
+                    setResults([...searchProducts(query), ...newProducts]);
+                }
+            })
+            .catch(console.error);
+    }, [query]);
 
     return (
         <div style={{ paddingTop: '20px', minHeight: '100vh' }}>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getProductById, products } from '../data';
 import { useStore } from '../store';
 import ProductCard from '../components/ProductCard';
@@ -8,13 +8,63 @@ import Footer from '../components/Footer';
 
 const ProductDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
-    const product = getProductById(Number(id));
+    const navigate = useNavigate();
     const { addToCart, toggleWishlist, isInWishlist } = useStore();
+    
+    const [product, setProduct] = useState<any>(getProductById(Number(id)) || getProductById(id || ''));
+    const [loadingLive, setLoadingLive] = useState(!product);
+
+    React.useEffect(() => {
+        if (!product && id) {
+            fetch('https://vibexpert-backend-main.onrender.com/api/shop/client-products')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.products) {
+                        const found = data.products.find((p: any) => String(p._id) === String(id) || String(p.id) === String(id));
+                        if (found) {
+                            setProduct({
+                                id: found._id || found.id,
+                                name: found.name,
+                                price: found.price,
+                                originalPrice: found.originalPrice || found.price,
+                                description: found.description,
+                                category: found.category,
+                                image: found.image || found.images?.[0]?.url || 'https://via.placeholder.com/600',
+                                images: found.images?.map((img: any) => img.url) || [],
+                                rating: found.rating || 5.0,
+                                reviews: found.reviews || 0,
+                                badge: found.badge || null,
+                                colors: found.colors || [],
+                                sizes: found.sizes || [],
+                                inStock: found.inStock !== false
+                            });
+                        }
+                    }
+                })
+                .finally(() => setLoadingLive(false));
+        } else {
+            setLoadingLive(false);
+        }
+    }, [id, product]);
+
     const [selectedColor, setSelectedColor] = useState<string>('');
     const [selectedSize, setSelectedSize] = useState<string>('');
     const [quantity, setQuantity] = useState(1);
 
-    if (!product) {
+    React.useEffect(() => {
+        if (product) {
+            if (product.colors?.length) setSelectedColor(product.colors[0]);
+            if (product.sizes?.length) setSelectedSize(product.sizes[0]);
+        }
+    }, [product]);
+
+    if (loadingLive) {
+        return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <p style={{ color: '#94a3b8' }}>Loading product details...</p>
+        </div>;
+    }
+
+    if (!product && !loadingLive) {
         return (
             <div style={{ paddingTop: '120px', textAlign: 'center', minHeight: '80vh' }}>
                 <span style={{ fontSize: '5rem', display: 'block', marginBottom: '16px' }}>😢</span>
@@ -168,7 +218,7 @@ const ProductDetailPage: React.FC = () => {
                                 Color: <span style={{ color: '#a855f7' }}>{selectedColor || 'Select'}</span>
                             </p>
                             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                {product.colors.map(color => (
+                                {product.colors.map((color: string) => (
                                     <motion.button
                                         key={color}
                                         whileTap={{ scale: 0.9 }}
@@ -198,7 +248,7 @@ const ProductDetailPage: React.FC = () => {
                                 Size: <span style={{ color: '#a855f7' }}>{selectedSize || 'Select'}</span>
                             </p>
                             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                {product.sizes.map(size => (
+                                {product.sizes.map((size: string) => (
                                     <motion.button
                                         key={size}
                                         whileTap={{ scale: 0.9 }}
