@@ -12,6 +12,8 @@ export interface Product {
   inStock: boolean;
   colors?: string[];
   sizes?: string[];
+  deliveryDays?: number;
+  deliveryNote?: string;
 }
 
 export interface CartItem {

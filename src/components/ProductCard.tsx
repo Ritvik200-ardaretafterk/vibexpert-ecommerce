@@ -219,6 +219,27 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
                             </span>
                         )}
                     </div>
+
+                    {/* Delivery Info */}
+                    {product.deliveryDays && (
+                        <div
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                marginTop: '10px',
+                                padding: '6px 10px',
+                                borderRadius: '8px',
+                                background: 'rgba(59, 130, 246, 0.08)',
+                                border: '1px solid rgba(59, 130, 246, 0.12)',
+                            }}
+                        >
+                            <span style={{ fontSize: '0.75rem' }}>🚚</span>
+                            <span style={{ fontSize: '0.72rem', color: '#60a5fa', fontWeight: 600 }}>
+                                Delivery in {product.deliveryDays} days
+                            </span>
+                        </div>
+                    )}
                 </Link>
 
                 {/* Add to Cart */}

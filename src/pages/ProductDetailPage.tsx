@@ -37,7 +37,9 @@ const ProductDetailPage: React.FC = () => {
                                 badge: found.badge || null,
                                 colors: found.colors || [],
                                 sizes: found.sizes || [],
-                                inStock: found.inStock !== false
+                                inStock: found.inStock !== false,
+                                deliveryDays: found.deliveryDays,
+                                deliveryNote: found.deliveryNote
                             };
                             setProduct(mapped);
                             // Set related products from same category
@@ -58,7 +60,9 @@ const ProductDetailPage: React.FC = () => {
                                     badge: p.badge || null,
                                     colors: p.colors || [],
                                     sizes: p.sizes || [],
-                                    inStock: p.inStock !== false
+                                    inStock: p.inStock !== false,
+                                    deliveryDays: p.deliveryDays,
+                                    deliveryNote: p.deliveryNote
                                 }));
                             setRelatedProducts(related);
                         }
@@ -230,6 +234,36 @@ const ProductDetailPage: React.FC = () => {
                     <p style={{ color: '#94a3b8', lineHeight: 1.7, marginBottom: '28px', fontSize: '1rem' }}>
                         {product.description}
                     </p>
+
+                    {/* Delivery Information */}
+                    {product.deliveryDays && (
+                        <div style={{
+                            padding: '16px 20px',
+                            background: 'rgba(59, 130, 246, 0.08)',
+                            border: '1px solid rgba(59, 130, 246, 0.15)',
+                            borderRadius: '12px',
+                            marginBottom: '28px',
+                            display: 'flex',
+                            gap: '12px',
+                            alignItems: 'flex-start'
+                        }}>
+                            <span style={{ fontSize: '1.4rem' }}>🚚</span>
+                            <div>
+                                <h4 style={{ color: '#60a5fa', fontSize: '0.95rem', fontWeight: 600, marginBottom: '4px' }}>
+                                    Estimated Delivery: Within {product.deliveryDays} Days
+                                </h4>
+                                {product.deliveryNote ? (
+                                    <p style={{ color: '#94a3b8', fontSize: '0.85rem', lineHeight: 1.4 }}>
+                                        {product.deliveryNote}
+                                    </p>
+                                ) : (
+                                    <p style={{ color: '#94a3b8', fontSize: '0.85rem', lineHeight: 1.4 }}>
+                                        Order now to get it delivered directly to your doorstep.
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Colors */}
                     {product.colors && product.colors.length > 0 && (

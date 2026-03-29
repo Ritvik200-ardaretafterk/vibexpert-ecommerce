@@ -49,6 +49,7 @@ const Navigation: React.FC = () => {
     { label: 'Deals', path: '/deals' },
     { label: 'Orders', path: '/orders', authRequired: true },
     { label: 'Wishlist', path: '/wishlist' },
+    { label: 'Support', path: '/support' },
   ].filter(link => !link.authRequired || isAuthenticated);
 
   return (

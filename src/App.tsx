@@ -12,8 +12,8 @@ import ProductDetailPage from './pages/ProductDetailPage';
 import WishlistPage from './pages/WishlistPage';
 import DealsPage from './pages/DealsPage';
 import OrdersPage from './pages/OrdersPage';
-
 import SearchPage from './pages/SearchPage';
+import SupportPage from './pages/SupportPage';
 import './App.css';
 
 // Inner app component that can use auth context
@@ -73,6 +73,7 @@ const AppContent: React.FC = () => {
           <Route path="/deals" element={<DealsPage />} />
           <Route path="/orders" element={<OrdersPage />} />
           <Route path="/search" element={<SearchPage />} />
+          <Route path="/support" element={<SupportPage />} />
         </Routes>
       </div>
     </Router>
