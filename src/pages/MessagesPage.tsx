@@ -17,6 +17,8 @@ interface ChatMessage {
     senderId: string;
     senderRole: 'admin' | 'user' | 'client';
     message: string;
+    mediaUrl?: string;
+    mediaType?: string;
     createdAt: string;
 }
 
@@ -39,6 +41,9 @@ const MessagesPage: React.FC = () => {
     const [sendingMessage, setSendingMessage] = useState(false);
     const [loadingMessages, setLoadingMessages] = useState(false);
     const [orderMessageCounts, setOrderMessageCounts] = useState<Record<string, number>>({});
+    const [selectedImage, setSelectedImage] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const chatEndRef = useRef<HTMLDivElement>(null);
     const chatPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -121,28 +126,49 @@ const MessagesPage: React.FC = () => {
         }
     };
 
+    const removeImage = () => {
+        setSelectedImage(null);
+        setImagePreview(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+
+    const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setSelectedImage(file);
+            const reader = new FileReader();
+            reader.onloadend = () => setImagePreview(reader.result as string);
+            reader.readAsDataURL(file);
+        }
+    };
+
     const openChat = (order: Order) => {
         setSelectedOrder(order);
         setMessages([]);
+        removeImage();
+        setNewMessage('');
         fetchMessages(order.order_id);
     };
 
     const sendMessage = async () => {
-        if (!newMessage.trim() || !selectedOrder) return;
+        if ((!newMessage.trim() && !selectedImage) || !selectedOrder) return;
         setSendingMessage(true);
         try {
             const token = localStorage.getItem('shop_auth_token');
+            const formData = new FormData();
+            formData.append('orderId', selectedOrder.order_id);
+            formData.append('senderId', user?.id || '');
+            formData.append('senderRole', 'user');
+            if (newMessage.trim()) formData.append('message', newMessage.trim());
+            if (selectedImage) formData.append('image', selectedImage);
+
             await fetch(`${API_URL}/api/orders/${selectedOrder.order_id}/messages`, {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    orderId: selectedOrder.order_id,
-                    senderId: user?.id,
-                    senderRole: 'user',
-                    message: newMessage.trim()
-                }),
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData,
             });
             setNewMessage('');
+            removeImage();
             fetchMessages(selectedOrder.order_id);
         } catch (err) {
             console.error('Send message error:', err);
@@ -417,7 +443,12 @@ const MessagesPage: React.FC = () => {
                                                                 {isAdmin ? '🛡️ Admin' : '🛍️ Seller'}
                                                             </p>
                                                         )}
-                                                        <p style={{ margin: 0, color: isMe ? '#fff' : '#f1f5f9', fontSize: '0.88rem', lineHeight: 1.5 }}>{msg.message}</p>
+                                                        {msg.mediaUrl && (
+                                                            <div style={{ marginBottom: msg.message && msg.message !== '📷 Photo' ? '8px' : '0', borderRadius: '8px', overflow: 'hidden' }}>
+                                                                <img src={msg.mediaUrl} alt="Attached" style={{ maxWidth: '100%', maxHeight: '200px', objectFit: 'cover', borderRadius: '8px', cursor: 'zoom-in', display: 'block' }} onClick={() => window.open(msg.mediaUrl, '_blank')} />
+                                                            </div>
+                                                        )}
+                                                        {msg.message && msg.message !== '📷 Photo' && <p style={{ margin: 0, color: isMe ? '#fff' : '#f1f5f9', fontSize: '0.88rem', lineHeight: 1.5 }}>{msg.message}</p>}
                                                         <p style={{ margin: '4px 0 0', fontSize: '0.65rem', color: isMe ? 'rgba(255,255,255,0.5)' : '#64748b' }}>
                                                             {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                             {' · '}
@@ -433,6 +464,14 @@ const MessagesPage: React.FC = () => {
 
                                 {/* Input */}
                                 <div style={{ borderTop: '1px solid rgba(148,163,184,0.1)', padding: '12px 16px' }}>
+                                    {/* Image Preview */}
+                                    {imagePreview && (
+                                        <div style={{ position: 'relative', display: 'inline-block', marginBottom: '10px' }}>
+                                            <img src={imagePreview} alt="Preview" style={{ height: '60px', borderRadius: '8px', border: '1px solid rgba(148,163,184,0.2)' }} />
+                                            <button onClick={removeImage} style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '10px' }}>✕</button>
+                                        </div>
+                                    )}
+
                                     {/* Quick replies */}
                                     <div style={{ display: 'flex', gap: '6px', marginBottom: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
                                         {['Thanks!', 'When will it arrive?', 'Can you update tracking?', 'Got it, thank you!'].map((q, qi) => (
@@ -443,7 +482,11 @@ const MessagesPage: React.FC = () => {
                                             }}>{q}</button>
                                         ))}
                                     </div>
-                                    <div style={{ display: 'flex', gap: '10px' }}>
+                                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                        <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageSelect} style={{ display: 'none' }} />
+                                        <button onClick={() => fileInputRef.current?.click()} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(148,163,184,0.1)', borderRadius: '14px', width: '45px', height: '45px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#94a3b8', flexShrink: 0, transition: 'all 0.2s' }}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                                        </button>
                                         <input
                                             type="text"
                                             value={newMessage}
@@ -458,11 +501,11 @@ const MessagesPage: React.FC = () => {
                                         />
                                         <button
                                             onClick={sendMessage}
-                                            disabled={sendingMessage || !newMessage.trim()}
+                                            disabled={sendingMessage || (!newMessage.trim() && !selectedImage)}
                                             style={{
-                                                padding: '12px 20px', borderRadius: '14px', border: 'none',
-                                                background: newMessage.trim() ? 'linear-gradient(135deg, #7c3aed, #a855f7)' : 'rgba(148,163,184,0.1)',
-                                                color: '#fff', cursor: newMessage.trim() ? 'pointer' : 'not-allowed',
+                                                padding: '0 20px', height: '45px', borderRadius: '14px', border: 'none',
+                                                background: (newMessage.trim() || selectedImage) ? 'linear-gradient(135deg, #7c3aed, #a855f7)' : 'rgba(148,163,184,0.1)',
+                                                color: '#fff', cursor: (newMessage.trim() || selectedImage) ? 'pointer' : 'not-allowed',
                                                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
                                                 opacity: sendingMessage ? 0.6 : 1, transition: 'all 0.2s',
                                                 fontSize: '0.85rem', fontWeight: 600
