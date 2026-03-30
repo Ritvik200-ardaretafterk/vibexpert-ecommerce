@@ -231,10 +231,9 @@ const MessagesPage: React.FC = () => {
                 </div>
 
                 {/* Layout: Sidebar + Chat */}
-                <div style={{ display: 'flex', gap: '20px', minHeight: '600px' }}>
+                <div className="messages-layout">
                     {/* Order List Sidebar */}
-                    <div style={{
-                        width: '340px', flexShrink: 0,
+                    <div className="messages-sidebar" style={{
                         background: 'rgba(5, 5, 16, 0.4)', border: '1px solid rgba(148, 163, 184, 0.1)',
                         borderRadius: '20px', overflow: 'hidden', display: 'flex', flexDirection: 'column'
                     }}>
