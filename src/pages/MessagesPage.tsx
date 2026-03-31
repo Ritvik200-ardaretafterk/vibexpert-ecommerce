@@ -46,6 +46,7 @@ const MessagesPage: React.FC = () => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const chatEndRef = useRef<HTMLDivElement>(null);
     const chatPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const prevMsgCountRef = useRef(0);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -114,7 +115,13 @@ const MessagesPage: React.FC = () => {
             });
             if (response.ok) {
                 const data = await response.json();
-                setMessages(data.messages || []);
+                const newMessages = data.messages || [];
+                setMessages(newMessages);
+                // Auto-scroll when new messages arrive during polling
+                if (silent && newMessages.length > prevMsgCountRef.current) {
+                    setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+                }
+                prevMsgCountRef.current = newMessages.length;
                 if (!silent) {
                     setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
                 }
@@ -147,6 +154,7 @@ const MessagesPage: React.FC = () => {
         setMessages([]);
         removeImage();
         setNewMessage('');
+        prevMsgCountRef.current = 0;
         fetchMessages(order.order_id);
     };
 

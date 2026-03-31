@@ -1,0 +1,37 @@
+﻿Creating an optimized production build...
+Compiled with warnings.
+
+[eslint] 
+src\pages\MessagesPage.tsx
+  Line 2:18:  'AnimatePresence' is defined but never used  @typescript-eslint/no-unused-vars
+
+src\pages\OrdersPage.tsx
+  Line 500:27:  'chatShipping' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src\pages\ProductDetailPage.tsx
+  Line 10:11:  'navigate' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src\pages\SearchPage.tsx
+  Line 11:12:  'loading' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+File sizes after gzip:
+
+  138.7 kB  build\static\js\main.f3043730.js
+  4.02 kB   build\static\css\main.79509b72.css
+  1.76 kB   build\static\js\453.be6ceaf3.chunk.js
+
+The project was built assuming it is hosted at /.
+You can control this with the homepage field in your package.json.
+
+The build folder is ready to be deployed.
+You may serve it with a static server:
+
+  serve -s build
+
+Find out more about deployment here:
+
+  https://cra.link/deployment
+
