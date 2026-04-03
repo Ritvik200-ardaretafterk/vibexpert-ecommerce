@@ -189,7 +189,7 @@ const MessagesPage: React.FC = () => {
             formData.append('orderId', selectedOrder.order_id);
             formData.append('senderId', user?.id || '');
             formData.append('senderRole', 'user');
-            if (newMessage.trim()) formData.append('message', newMessage.trim());
+            formData.append('message', newMessage.trim());
             if (selectedImage) formData.append('image', selectedImage);
 
             const response = await fetch(`${API_URL}/api/orders/${selectedOrder.order_id}/messages`, {
