@@ -185,12 +185,19 @@ const MessagesPage: React.FC = () => {
         setUploadError(null);
         try {
             const token = localStorage.getItem('shop_auth_token');
+            if (!token) {
+                setUploadError('Authentication expired. Please log in again.');
+                return;
+            }
             const formData = new FormData();
             formData.append('orderId', selectedOrder.order_id);
             formData.append('senderId', user?.id || '');
             formData.append('senderRole', 'user');
-            formData.append('message', newMessage.trim());
-            if (selectedImage) formData.append('image', selectedImage);
+            formData.append('message', newMessage.trim() || (selectedImage ? '📷 Photo' : ''));
+            if (selectedImage) {
+                console.log(`Sending image: ${selectedImage.name}, size=${(selectedImage.size / 1024).toFixed(1)}KB, type=${selectedImage.type}`);
+                formData.append('image', selectedImage);
+            }
 
             const response = await fetch(`${API_URL}/api/orders/${selectedOrder.order_id}/messages`, {
                 method: 'POST',
@@ -198,9 +205,14 @@ const MessagesPage: React.FC = () => {
                 body: formData,
             });
 
-            const data = await response.json();
+            let data: any;
+            try {
+                data = await response.json();
+            } catch {
+                throw new Error(`Server error (${response.status}). Please try again.`);
+            }
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to send message');
+                throw new Error(data.error || `Failed to send message (${response.status})`);
             }
 
             setNewMessage('');
