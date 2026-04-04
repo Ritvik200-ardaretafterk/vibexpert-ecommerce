@@ -38,26 +38,59 @@ const Footer: React.FC = () => {
                             Your vibe, your style. Premium gifts, accessories & lifestyle products curated just for you.
                         </p>
                         <div style={{ display: 'flex', gap: '12px' }}>
-                            {['📸', '🐦', '📘', '💬'].map((icon, i) => (
-                                <motion.a
-                                    key={i}
-                                    href="#"
-                                    whileHover={{ scale: 1.2, y: -2 }}
-                                    style={{
-                                        width: '40px',
-                                        height: '40px',
-                                        borderRadius: '10px',
-                                        background: 'var(--bg-card)',
-                                        border: '1px solid var(--border-subtle)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        textDecoration: 'none',
-                                        fontSize: '1.1rem',
-                                    }}
-                                >
-                                    {icon}
-                                </motion.a>
+                            {[
+                                { icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E1306C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>, href: 'https://www.instagram.com/vibexpert.shop?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==', external: true },
+                                { icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0A66C2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>, href: 'https://www.linkedin.com/in/ri-merge-46a8653ab?utm_source=share_via&utm_content=profile&utm_medium=member_android', external: true },
+                                { icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>, href: '/support', external: false },
+                                { icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>, href: 'mailto:vibexpert06@gmail.com', external: true },
+                            ].map((item, i) => (
+                                item.external ? (
+                                    <motion.a
+                                        key={i}
+                                        href={item.href}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        whileHover={{ scale: 1.2, y: -2 }}
+                                        style={{
+                                            width: '40px',
+                                            height: '40px',
+                                            borderRadius: '10px',
+                                            background: 'var(--bg-card)',
+                                            border: '1px solid var(--border-subtle)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            textDecoration: 'none',
+                                            fontSize: '1.1rem',
+                                        }}
+                                    >
+                                        {item.icon}
+                                    </motion.a>
+                                ) : (
+                                    <motion.div
+                                        key={i}
+                                        whileHover={{ scale: 1.2, y: -2 }}
+                                        style={{ cursor: 'pointer' }}
+                                        onClick={() => window.location.href = item.href}
+                                    >
+                                        <div
+                                            style={{
+                                                width: '40px',
+                                                height: '40px',
+                                                borderRadius: '10px',
+                                                background: 'var(--bg-card)',
+                                                border: '1px solid var(--border-subtle)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                textDecoration: 'none',
+                                                fontSize: '1.1rem',
+                                            }}
+                                        >
+                                            {item.icon}
+                                        </div>
+                                    </motion.div>
+                                )
                             ))}
                         </div>
                     </div>
