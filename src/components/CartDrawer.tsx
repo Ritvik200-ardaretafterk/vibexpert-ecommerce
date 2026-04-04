@@ -54,6 +54,15 @@ const CartDrawer: React.FC = () => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [orderSuccess, setOrderSuccess] = useState<{ orderId: string; paymentId: string } | null>(null);
 
+    // Coupon state
+    const [couponCode, setCouponCode] = useState('');
+    const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discountType: string; discountValue: number; discount: number } | null>(null);
+    const [couponError, setCouponError] = useState('');
+    const [couponLoading, setCouponLoading] = useState(false);
+    const [suggestedCoupons, setSuggestedCoupons] = useState<Array<{ id: string; code: string; discountType: string; discountValue: number; minOrderAmount: number; sellerName: string; expiryDate: string | null }>>([]);
+    const [showSuggested, setShowSuggested] = useState(false);
+    const [suggestedLoading, setSuggestedLoading] = useState(false);
+
     // Reset state when drawer closes
     const handleClose = () => {
         setCartOpen(false);
@@ -67,6 +76,71 @@ const CartDrawer: React.FC = () => {
             }
         }, 350);
     };
+
+    // Fetch suggested coupons when cart opens
+    React.useEffect(() => {
+        if (state.isCartOpen && state.cart.length > 0) {
+            fetchSuggestedCoupons();
+        }
+    }, [state.isCartOpen]);
+
+    // Clear applied coupon when cart changes
+    React.useEffect(() => {
+        if (appliedCoupon) {
+            // Re-validate with new total
+            handleApplyCoupon(appliedCoupon.code);
+        }
+    }, [cartTotal]);
+
+    const fetchSuggestedCoupons = async () => {
+        setSuggestedLoading(true);
+        try {
+            const res = await fetch(`${API_URL}/api/shop/coupons`);
+            const data = await res.json();
+            if (data.success) setSuggestedCoupons(data.coupons || []);
+        } catch (err) {
+            // silently fail
+        } finally {
+            setSuggestedLoading(false);
+        }
+    };
+
+    const handleApplyCoupon = async (code?: string) => {
+        const codeToApply = code || couponCode.trim();
+        if (!codeToApply) return;
+        setCouponLoading(true);
+        setCouponError('');
+        try {
+            const res = await fetch(`${API_URL}/api/shop/coupons/validate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: codeToApply, orderTotal: cartTotal }),
+            });
+            const data = await res.json();
+            if (data.valid) {
+                setAppliedCoupon(data.coupon);
+                setCouponCode('');
+                setCouponError('');
+                if (!code) showToast(`Coupon ${data.coupon.code} applied! 🎉`, 'success');
+            } else {
+                setCouponError(data.error || 'Invalid coupon');
+                if (code) setAppliedCoupon(null);
+            }
+        } catch (err) {
+            setCouponError('Failed to validate coupon');
+        } finally {
+            setCouponLoading(false);
+        }
+    };
+
+    const removeCoupon = () => {
+        setAppliedCoupon(null);
+        setCouponCode('');
+        setCouponError('');
+        showToast('Coupon removed', 'info');
+    };
+
+    const finalTotal = appliedCoupon ? Math.max(0, cartTotal - appliedCoupon.discount) : cartTotal;
 
     const handleAddressChange = (field: keyof ShippingAddress, value: string) => {
         setAddress(prev => ({ ...prev, [field]: value }));
@@ -129,7 +203,9 @@ const CartDrawer: React.FC = () => {
                 },
                 body: JSON.stringify({
                     items,
-                    totalAmount: cartTotal,
+                    totalAmount: finalTotal,
+                    originalAmount: cartTotal,
+                    couponCode: appliedCoupon?.code || null,
                     shippingAddress: address,
                 }),
             });
@@ -636,6 +712,199 @@ const CartDrawer: React.FC = () => {
                                                 </AnimatePresence>
                                             </div>
                                         )}
+
+                                        {/* Coupon Section */}
+                                        {state.cart.length > 0 && (
+                                            <div style={{ marginTop: '16px' }}>
+                                                {/* Applied Coupon */}
+                                                {appliedCoupon ? (
+                                                    <div style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'space-between',
+                                                        padding: '10px 14px',
+                                                        background: 'rgba(16, 185, 129, 0.08)',
+                                                        border: '1px solid rgba(16, 185, 129, 0.2)',
+                                                        borderRadius: '12px',
+                                                        marginBottom: '12px',
+                                                    }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                            <span style={{ fontSize: '1.1rem' }}>🎟️</span>
+                                                            <div>
+                                                                <p style={{ color: '#10b981', fontSize: '0.82rem', fontWeight: 700, margin: 0 }}>
+                                                                    {appliedCoupon.code} applied
+                                                                </p>
+                                                                <p style={{ color: '#6ee7b7', fontSize: '0.72rem', margin: 0 }}>
+                                                                    You save ₹{appliedCoupon.discount.toLocaleString()}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <motion.button
+                                                            whileTap={{ scale: 0.9 }}
+                                                            onClick={removeCoupon}
+                                                            style={{
+                                                                background: 'none',
+                                                                border: 'none',
+                                                                color: '#f43f5e',
+                                                                cursor: 'pointer',
+                                                                fontSize: '0.75rem',
+                                                                fontWeight: 600,
+                                                                padding: '4px 8px',
+                                                            }}
+                                                        >
+                                                            Remove
+                                                        </motion.button>
+                                                    </div>
+                                                ) : (
+                                                    <>
+                                                        {/* Coupon Input */}
+                                                        <div style={{
+                                                            display: 'flex',
+                                                            gap: '8px',
+                                                            marginBottom: couponError ? '4px' : '8px',
+                                                        }}>
+                                                            <input
+                                                                value={couponCode}
+                                                                onChange={e => setCouponCode(e.target.value.toUpperCase())}
+                                                                onKeyDown={e => e.key === 'Enter' && handleApplyCoupon()}
+                                                                placeholder="Enter coupon code"
+                                                                style={{
+                                                                    flex: 1,
+                                                                    padding: '10px 14px',
+                                                                    background: 'var(--bg-surface, #1a1a2e)',
+                                                                    border: '1px solid var(--border-subtle, #2a2a4a)',
+                                                                    borderRadius: '10px',
+                                                                    color: '#f1f5f9',
+                                                                    fontSize: '0.85rem',
+                                                                    fontFamily: 'monospace',
+                                                                    letterSpacing: '1px',
+                                                                    outline: 'none',
+                                                                    boxSizing: 'border-box' as const,
+                                                                }}
+                                                            />
+                                                            <motion.button
+                                                                whileHover={{ scale: 1.02 }}
+                                                                whileTap={{ scale: 0.95 }}
+                                                                onClick={() => handleApplyCoupon()}
+                                                                disabled={!couponCode.trim() || couponLoading}
+                                                                style={{
+                                                                    padding: '10px 18px',
+                                                                    background: couponCode.trim() ? 'linear-gradient(135deg, #7c3aed, #a855f7)' : 'rgba(100, 116, 139, 0.2)',
+                                                                    color: couponCode.trim() ? 'white' : '#64748b',
+                                                                    border: 'none',
+                                                                    borderRadius: '10px',
+                                                                    fontWeight: 700,
+                                                                    fontSize: '0.82rem',
+                                                                    cursor: couponCode.trim() ? 'pointer' : 'not-allowed',
+                                                                    whiteSpace: 'nowrap' as const,
+                                                                }}
+                                                            >
+                                                                {couponLoading ? '...' : 'Apply'}
+                                                            </motion.button>
+                                                        </div>
+                                                        {couponError && (
+                                                            <p style={{ color: '#f43f5e', fontSize: '0.75rem', margin: '0 0 8px', paddingLeft: '4px' }}>{couponError}</p>
+                                                        )}
+                                                    </>
+                                                )}
+
+                                                {/* Suggested Coupons */}
+                                                {!appliedCoupon && (
+                                                    <div>
+                                                        <motion.button
+                                                            whileTap={{ scale: 0.98 }}
+                                                            onClick={() => setShowSuggested(!showSuggested)}
+                                                            style={{
+                                                                background: 'none',
+                                                                border: 'none',
+                                                                color: '#a855f7',
+                                                                fontSize: '0.78rem',
+                                                                fontWeight: 600,
+                                                                cursor: 'pointer',
+                                                                padding: '4px 0',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: '4px',
+                                                            }}
+                                                        >
+                                                            🎟️ {showSuggested ? 'Hide' : 'View'} available coupons
+                                                            <span style={{ fontSize: '0.7rem', transition: 'transform 0.2s', transform: showSuggested ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+                                                        </motion.button>
+
+                                                        <AnimatePresence>
+                                                            {showSuggested && (
+                                                                <motion.div
+                                                                    initial={{ height: 0, opacity: 0 }}
+                                                                    animate={{ height: 'auto', opacity: 1 }}
+                                                                    exit={{ height: 0, opacity: 0 }}
+                                                                    transition={{ duration: 0.2 }}
+                                                                    style={{ overflow: 'hidden', marginTop: '8px' }}
+                                                                >
+                                                                    {suggestedLoading ? (
+                                                                        <div style={{ display: 'flex', justifyContent: 'center', padding: '16px' }}>
+                                                                            <motion.div
+                                                                                animate={{ rotate: 360 }}
+                                                                                transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                                                                                style={{ width: '20px', height: '20px', borderRadius: '50%', border: '2px solid rgba(168, 85, 247, 0.2)', borderTopColor: '#a855f7' }}
+                                                                            />
+                                                                        </div>
+                                                                    ) : suggestedCoupons.length > 0 ? (
+                                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                                                            {suggestedCoupons.map((c) => (
+                                                                                <motion.div
+                                                                                    key={c.id}
+                                                                                    whileHover={{ scale: 1.01 }}
+                                                                                    whileTap={{ scale: 0.98 }}
+                                                                                    onClick={() => {
+                                                                                        setCouponCode(c.code);
+                                                                                        handleApplyCoupon(c.code);
+                                                                                        setShowSuggested(false);
+                                                                                    }}
+                                                                                    style={{
+                                                                                        display: 'flex',
+                                                                                        alignItems: 'center',
+                                                                                        justifyContent: 'space-between',
+                                                                                        padding: '10px 12px',
+                                                                                        background: 'var(--bg-card, #1a1a2e)',
+                                                                                        border: '1px dashed rgba(168, 85, 247, 0.3)',
+                                                                                        borderRadius: '10px',
+                                                                                        cursor: 'pointer',
+                                                                                    }}
+                                                                                >
+                                                                                    <div>
+                                                                                        <p style={{ color: '#f1f5f9', fontSize: '0.82rem', fontWeight: 700, fontFamily: 'monospace', letterSpacing: '1px', margin: 0 }}>
+                                                                                            {c.code}
+                                                                                        </p>
+                                                                                        <p style={{ color: '#64748b', fontSize: '0.7rem', margin: '2px 0 0' }}>
+                                                                                            {c.discountType === 'percent' ? `${c.discountValue}% off` : `₹${c.discountValue} off`}
+                                                                                            {c.minOrderAmount > 0 ? ` • Min ₹${c.minOrderAmount}` : ''}
+                                                                                            {' • by '}{c.sellerName}
+                                                                                        </p>
+                                                                                    </div>
+                                                                                    <span style={{
+                                                                                        fontSize: '0.7rem',
+                                                                                        fontWeight: 700,
+                                                                                        color: '#a855f7',
+                                                                                        background: 'rgba(168, 85, 247, 0.1)',
+                                                                                        padding: '4px 10px',
+                                                                                        borderRadius: '6px',
+                                                                                        whiteSpace: 'nowrap' as const,
+                                                                                    }}>TAP TO APPLY</span>
+                                                                                </motion.div>
+                                                                            ))}
+                                                                        </div>
+                                                                    ) : (
+                                                                        <p style={{ color: '#475569', fontSize: '0.78rem', textAlign: 'center', padding: '12px 0' }}>
+                                                                            No coupons available right now
+                                                                        </p>
+                                                                    )}
+                                                                </motion.div>
+                                                            )}
+                                                        </AnimatePresence>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 )}
 
@@ -887,30 +1156,74 @@ const CartDrawer: React.FC = () => {
                                             </div>
                                         )}
 
-                                        {/* Total */}
                                         {step === 'cart' && (
+                                            <>
                                             <div
                                                 style={{
                                                     display: 'flex',
                                                     justifyContent: 'space-between',
-                                                    marginBottom: '16px',
+                                                    marginBottom: appliedCoupon ? '8px' : '16px',
                                                     fontSize: '1.1rem',
                                                 }}
                                             >
-                                                <span style={{ color: '#f1f5f9', fontWeight: 600 }}>Total</span>
+                                                <span style={{ color: '#f1f5f9', fontWeight: 600 }}>{appliedCoupon ? 'Subtotal' : 'Total'}</span>
                                                 <span
                                                     style={{
                                                         fontWeight: 800,
-                                                        background: 'linear-gradient(135deg, #f1f5f9, #a855f7)',
-                                                        WebkitBackgroundClip: 'text',
-                                                        WebkitTextFillColor: 'transparent',
-                                                        backgroundClip: 'text',
-                                                        fontSize: '1.3rem',
+                                                        ...(appliedCoupon ? {
+                                                            color: '#94a3b8',
+                                                            fontSize: '1.1rem',
+                                                            textDecoration: 'line-through',
+                                                        } : {
+                                                            background: 'linear-gradient(135deg, #f1f5f9, #a855f7)',
+                                                            WebkitBackgroundClip: 'text',
+                                                            WebkitTextFillColor: 'transparent',
+                                                            backgroundClip: 'text',
+                                                            fontSize: '1.3rem',
+                                                        }),
                                                     }}
                                                 >
                                                     ₹{cartTotal.toLocaleString()}
                                                 </span>
                                             </div>
+                                            {appliedCoupon && (
+                                                <>
+                                                    <div
+                                                        style={{
+                                                            display: 'flex',
+                                                            justifyContent: 'space-between',
+                                                            marginBottom: '8px',
+                                                            fontSize: '0.88rem',
+                                                        }}
+                                                    >
+                                                        <span style={{ color: '#10b981' }}>Coupon ({appliedCoupon.code})</span>
+                                                        <span style={{ color: '#10b981', fontWeight: 600 }}>-₹{appliedCoupon.discount.toLocaleString()}</span>
+                                                    </div>
+                                                    <div
+                                                        style={{
+                                                            display: 'flex',
+                                                            justifyContent: 'space-between',
+                                                            marginBottom: '16px',
+                                                            fontSize: '1.2rem',
+                                                        }}
+                                                    >
+                                                        <span style={{ color: '#f1f5f9', fontWeight: 700 }}>Total</span>
+                                                        <span
+                                                            style={{
+                                                                fontWeight: 800,
+                                                                background: 'linear-gradient(135deg, #f1f5f9, #a855f7)',
+                                                                WebkitBackgroundClip: 'text',
+                                                                WebkitTextFillColor: 'transparent',
+                                                                backgroundClip: 'text',
+                                                                fontSize: '1.3rem',
+                                                            }}
+                                                        >
+                                                            ₹{finalTotal.toLocaleString()}
+                                                        </span>
+                                                    </div>
+                                                </>
+                                            )}
+                                            </>
                                         )}
 
                                         {/* CTA Buttons */}
@@ -966,7 +1279,7 @@ const CartDrawer: React.FC = () => {
                                                 }}
                                                 id="pay-now-button"
                                             >
-                                                💳 Pay ₹{cartTotal.toLocaleString()} — Razorpay
+                                                💳 Pay ₹{finalTotal.toLocaleString()} — Razorpay
                                             </motion.button>
                                         )}
 
