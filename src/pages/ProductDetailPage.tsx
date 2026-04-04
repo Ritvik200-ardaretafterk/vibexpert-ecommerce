@@ -387,30 +387,52 @@ const ProductDetailPage: React.FC = () => {
 
                     {/* Action Buttons */}
                     <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                        <motion.button
-                            whileHover={{ scale: 1.02, boxShadow: '0 8px 30px rgba(124, 58, 237, 0.4)' }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={() => addToCart(product, quantity, selectedColor, selectedSize)}
-                            style={{
-                                flex: 1,
-                                minWidth: '200px',
-                                padding: '16px 32px',
-                                background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '14px',
-                                fontWeight: 700,
-                                fontSize: '1rem',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '8px',
-                            }}
-                            id="product-add-to-cart"
-                        >
-                            🛒 Add to Cart
-                        </motion.button>
+                        {product.inStock ? (
+                            <motion.button
+                                whileHover={{ scale: 1.02, boxShadow: '0 8px 30px rgba(124, 58, 237, 0.4)' }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => addToCart(product, quantity, selectedColor, selectedSize)}
+                                style={{
+                                    flex: 1,
+                                    minWidth: '200px',
+                                    padding: '16px 32px',
+                                    background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '14px',
+                                    fontWeight: 700,
+                                    fontSize: '1rem',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px',
+                                }}
+                                id="product-add-to-cart"
+                            >
+                                🛒 Add to Cart
+                            </motion.button>
+                        ) : (
+                            <div
+                                style={{
+                                    flex: 1,
+                                    minWidth: '200px',
+                                    padding: '16px 32px',
+                                    background: 'rgba(239, 68, 68, 0.1)',
+                                    color: '#ef4444',
+                                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                                    borderRadius: '14px',
+                                    fontWeight: 700,
+                                    fontSize: '1rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px',
+                                }}
+                            >
+                                🚫 Out of Stock
+                            </div>
+                        )}
 
                         <motion.button
                             whileHover={{ scale: 1.05 }}

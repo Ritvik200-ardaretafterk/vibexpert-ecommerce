@@ -243,33 +243,55 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
                 </Link>
 
                 {/* Add to Cart */}
-                <motion.button
-                    whileHover={{
-                        boxShadow: '0 4px 20px rgba(124, 58, 237, 0.35)',
-                    }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={(e) => { e.stopPropagation(); addToCart(product); }}
-                    style={{
-                        width: '100%',
-                        marginTop: '14px',
-                        padding: '10px',
-                        background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '10px',
-                        fontWeight: 600,
-                        fontSize: '0.85rem',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                        transition: 'box-shadow 0.3s ease, transform 0.2s ease',
-                    }}
-                    id={`add-to-cart-${product.id}`}
-                >
-                    🛒 Add to Cart
-                </motion.button>
+                {product.inStock ? (
+                    <motion.button
+                        whileHover={{
+                            boxShadow: '0 4px 20px rgba(124, 58, 237, 0.35)',
+                        }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={(e) => { e.stopPropagation(); addToCart(product); }}
+                        style={{
+                            width: '100%',
+                            marginTop: '14px',
+                            padding: '10px',
+                            background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '10px',
+                            fontWeight: 600,
+                            fontSize: '0.85rem',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px',
+                            transition: 'box-shadow 0.3s ease, transform 0.2s ease',
+                        }}
+                        id={`add-to-cart-${product.id}`}
+                    >
+                        🛒 Add to Cart
+                    </motion.button>
+                ) : (
+                    <div
+                        style={{
+                            width: '100%',
+                            marginTop: '14px',
+                            padding: '10px',
+                            background: 'rgba(239, 68, 68, 0.1)',
+                            color: '#ef4444',
+                            border: '1px solid rgba(239, 68, 68, 0.3)',
+                            borderRadius: '10px',
+                            fontWeight: 600,
+                            fontSize: '0.85rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px',
+                        }}
+                    >
+                        🚫 Out of Stock
+                    </div>
+                )}
             </div>
         </motion.div>
     );
