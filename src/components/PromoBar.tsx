@@ -23,16 +23,16 @@ const PromoBar: React.FC = () => {
                     id="promo-bar"
                 >
                     <p style={{ fontSize: '0.8rem', fontWeight: 600, color: 'white', margin: 0 }}>
-                        🎉 Free Shipping on your first order — Use code <strong>VIBE2026</strong> at checkout!{' '}
+                        🎓 Exciting discounts & mind-blowing coupons for students — Grab yours before they're gone!{' '}
                         <a
-                            href="/shop"
+                            href="/deals"
                             style={{
                                 color: 'white',
                                 textDecoration: 'underline',
                                 fontWeight: 700,
                             }}
                         >
-                            Shop Now →
+                            Explore Deals →
                         </a>
                     </p>
                     <button
