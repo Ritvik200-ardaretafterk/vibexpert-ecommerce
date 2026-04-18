@@ -668,25 +668,31 @@ const CartDrawer: React.FC = () => {
                                                                         >
                                                                             {item.quantity}
                                                                         </span>
-                                                                        <motion.button
-                                                                            whileTap={{ scale: 0.85 }}
-                                                                            onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                                                                            style={{
-                                                                                width: '28px',
-                                                                                height: '28px',
-                                                                                borderRadius: '6px',
-                                                                                background: 'var(--bg-surface)',
-                                                                                border: '1px solid var(--border-subtle)',
-                                                                                color: '#f1f5f9',
-                                                                                cursor: 'pointer',
-                                                                                fontSize: '0.9rem',
-                                                                                display: 'flex',
-                                                                                alignItems: 'center',
-                                                                                justifyContent: 'center',
-                                                                            }}
-                                                                        >
-                                                                            +
-                                                                        </motion.button>
+                                                                        {(() => {
+                                                                            const atLimit = item.product.stockQuantity != null && item.quantity >= item.product.stockQuantity;
+                                                                            return (
+                                                                                <motion.button
+                                                                                    whileTap={{ scale: atLimit ? 1 : 0.85 }}
+                                                                                    onClick={() => { if (!atLimit) updateQuantity(item.product.id, item.quantity + 1); }}
+                                                                                    style={{
+                                                                                        width: '28px',
+                                                                                        height: '28px',
+                                                                                        borderRadius: '6px',
+                                                                                        background: 'var(--bg-surface)',
+                                                                                        border: '1px solid var(--border-subtle)',
+                                                                                        color: atLimit ? '#475569' : '#f1f5f9',
+                                                                                        cursor: atLimit ? 'not-allowed' : 'pointer',
+                                                                                        fontSize: '0.9rem',
+                                                                                        display: 'flex',
+                                                                                        alignItems: 'center',
+                                                                                        justifyContent: 'center',
+                                                                                        opacity: atLimit ? 0.4 : 1,
+                                                                                    }}
+                                                                                >
+                                                                                    +
+                                                                                </motion.button>
+                                                                            );
+                                                                        })()}
 
                                                                         <motion.button
                                                                             whileHover={{ scale: 1.1 }}

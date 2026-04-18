@@ -10,6 +10,7 @@ export interface Product {
   description: string;
   badge?: 'sale' | 'new' | 'trending';
   inStock: boolean;
+  stockQuantity?: number;
   colors?: string[];
   sizes?: string[];
   deliveryDays?: number;

@@ -23,6 +23,7 @@ const ProductDetailPage: React.FC = () => {
                     if (data.success && data.products) {
                         const found = data.products.find((p: any) => String(p._id) === String(id) || String(p.id) === String(id));
                         if (found) {
+                            const stockQty = found.stockQuantity != null ? found.stockQuantity : undefined;
                             const mapped = {
                                 id: found._id || found.id,
                                 name: found.name,
@@ -37,7 +38,8 @@ const ProductDetailPage: React.FC = () => {
                                 badge: found.badge || null,
                                 colors: found.colors || [],
                                 sizes: found.sizes || [],
-                                inStock: found.inStock !== false,
+                                inStock: stockQty !== undefined ? stockQty > 0 : found.inStock !== false,
+                                stockQuantity: stockQty,
                                 deliveryDays: found.deliveryDays,
                                 deliveryNote: found.deliveryNote
                             };
@@ -331,7 +333,14 @@ const ProductDetailPage: React.FC = () => {
 
                     {/* Quantity */}
                     <div style={{ marginBottom: '28px' }}>
-                        <p style={{ fontSize: '0.85rem', fontWeight: 600, color: '#f1f5f9', marginBottom: '10px' }}>Quantity</p>
+                        <p style={{ fontSize: '0.85rem', fontWeight: 600, color: '#f1f5f9', marginBottom: '10px' }}>
+                            Quantity
+                            {product.stockQuantity != null && product.stockQuantity > 0 && (
+                                <span style={{ color: product.stockQuantity <= 5 ? '#f59e0b' : '#94a3b8', fontWeight: 500, fontSize: '0.8rem', marginLeft: '8px' }}>
+                                    {product.stockQuantity <= 5 ? `⚠️ Only ${product.stockQuantity} left!` : `(${product.stockQuantity} available)`}
+                                </span>
+                            )}
+                        </p>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <motion.button
                                 whileTap={{ scale: 0.85 }}
@@ -365,19 +374,23 @@ const ProductDetailPage: React.FC = () => {
                             </span>
                             <motion.button
                                 whileTap={{ scale: 0.85 }}
-                                onClick={() => setQuantity(quantity + 1)}
+                                onClick={() => {
+                                    const maxQty = product.stockQuantity != null ? product.stockQuantity : 99;
+                                    if (quantity < maxQty) setQuantity(quantity + 1);
+                                }}
                                 style={{
                                     width: '40px',
                                     height: '40px',
                                     borderRadius: '10px',
                                     background: 'var(--bg-card)',
                                     border: '1px solid var(--border-subtle)',
-                                    color: '#f1f5f9',
-                                    cursor: 'pointer',
+                                    color: (product.stockQuantity != null && quantity >= product.stockQuantity) ? '#475569' : '#f1f5f9',
+                                    cursor: (product.stockQuantity != null && quantity >= product.stockQuantity) ? 'not-allowed' : 'pointer',
                                     fontSize: '1.1rem',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
+                                    opacity: (product.stockQuantity != null && quantity >= product.stockQuantity) ? 0.4 : 1,
                                 }}
                             >
                                 +

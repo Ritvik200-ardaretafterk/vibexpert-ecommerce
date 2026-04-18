@@ -30,22 +30,25 @@ type Action =
 function storeReducer(state: StoreState, action: Action): StoreState {
     switch (action.type) {
         case 'ADD_TO_CART': {
+            const maxStock = action.product.stockQuantity != null ? action.product.stockQuantity : Infinity;
             const existing = state.cart.find(item => item.product.id === action.product.id);
             if (existing) {
+                const newQty = Math.min(existing.quantity + (action.quantity || 1), maxStock);
                 return {
                     ...state,
                     cart: state.cart.map(item =>
                         item.product.id === action.product.id
-                            ? { ...item, quantity: item.quantity + (action.quantity || 1) }
+                            ? { ...item, quantity: newQty }
                             : item
                     ),
                 };
             }
+            const qty = Math.min(action.quantity || 1, maxStock);
             return {
                 ...state,
                 cart: [...state.cart, {
                     product: action.product,
-                    quantity: action.quantity || 1,
+                    quantity: qty,
                     selectedColor: action.color,
                     selectedSize: action.size,
                 }],
@@ -56,21 +59,25 @@ function storeReducer(state: StoreState, action: Action): StoreState {
                 ...state,
                 cart: state.cart.filter(item => item.product.id !== action.productId),
             };
-        case 'UPDATE_QUANTITY':
+        case 'UPDATE_QUANTITY': {
             if (action.quantity <= 0) {
                 return {
                     ...state,
                     cart: state.cart.filter(item => item.product.id !== action.productId),
                 };
             }
+            const cartItem = state.cart.find(item => item.product.id === action.productId);
+            const stockLimit = cartItem?.product.stockQuantity != null ? cartItem.product.stockQuantity : Infinity;
+            const clampedQty = Math.min(action.quantity, stockLimit);
             return {
                 ...state,
                 cart: state.cart.map(item =>
                     item.product.id === action.productId
-                        ? { ...item, quantity: action.quantity }
+                        ? { ...item, quantity: clampedQty }
                         : item
                 ),
             };
+        }
         case 'CLEAR_CART':
             return { ...state, cart: [] };
         case 'TOGGLE_WISHLIST': {
@@ -113,10 +120,24 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const [state, dispatch] = useReducer(storeReducer, initialState);
 
     const addToCart = useCallback((product: Product, quantity = 1, color?: string, size?: string) => {
+        const maxStock = product.stockQuantity != null ? product.stockQuantity : Infinity;
+        if (maxStock <= 0) {
+            dispatch({ type: 'SET_TOAST', toast: { message: `${product.name} is out of stock!`, type: 'error' } });
+            setTimeout(() => dispatch({ type: 'SET_TOAST', toast: null }), 3000);
+            return;
+        }
+        // Check if adding would exceed stock
+        const existingItem = state.cart.find(item => item.product.id === product.id);
+        const currentQty = existingItem ? existingItem.quantity : 0;
+        if (currentQty >= maxStock) {
+            dispatch({ type: 'SET_TOAST', toast: { message: `Cannot add more — only ${maxStock} in stock!`, type: 'error' } });
+            setTimeout(() => dispatch({ type: 'SET_TOAST', toast: null }), 3000);
+            return;
+        }
         dispatch({ type: 'ADD_TO_CART', product, quantity, color, size });
         dispatch({ type: 'SET_TOAST', toast: { message: `${product.name} added to cart!`, type: 'success' } });
         setTimeout(() => dispatch({ type: 'SET_TOAST', toast: null }), 3000);
-    }, []);
+    }, [state.cart]);
 
     const removeFromCart = useCallback((productId: number) => {
         dispatch({ type: 'REMOVE_FROM_CART', productId });
