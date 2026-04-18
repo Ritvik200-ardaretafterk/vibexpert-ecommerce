@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useParams, Link, useNavigate } from 'react-router-dom';

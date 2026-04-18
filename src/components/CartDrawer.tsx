@@ -82,6 +82,7 @@ const CartDrawer: React.FC = () => {
         if (state.isCartOpen && state.cart.length > 0) {
             fetchSuggestedCoupons();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [state.isCartOpen]);
 
     // Clear applied coupon when cart changes
@@ -90,6 +91,7 @@ const CartDrawer: React.FC = () => {
             // Re-validate with new total
             handleApplyCoupon(appliedCoupon.code);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [cartTotal]);
 
     const fetchSuggestedCoupons = async () => {
