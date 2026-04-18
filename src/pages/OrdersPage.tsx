@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../AuthContext';
+import ReviewModal from '../components/ReviewModal';
 
 const API_URL = 'https://vibexpert-backend-main.onrender.com';
 
@@ -12,6 +13,8 @@ interface OrderItem {
     image: string;
     selectedColor?: string;
     selectedSize?: string;
+    productId?: string;
+    id?: string;
 }
 
 interface TrackingInfo {
@@ -61,6 +64,7 @@ const OrdersPage: React.FC = () => {
     const chatEndRef = useRef<HTMLDivElement>(null);
     const chatPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const prevMsgCountRef = useRef(0);
+    const [reviewOrder, setReviewOrder] = useState<Order | null>(null);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -478,7 +482,17 @@ const OrdersPage: React.FC = () => {
 
                                                     {/* Chat Button at Bottom */}
                                                     {showShipping && (
-                                                        <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
+                                                        <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end', gap: '10px', flexWrap: 'wrap' }}>
+                                                            {['delivered', 'completed'].includes(order.status) && (
+                                                                <button onClick={(e) => { e.stopPropagation(); setReviewOrder(order); }} style={{
+                                                                    display: 'flex', alignItems: 'center', gap: '8px',
+                                                                    padding: '10px 20px', borderRadius: '12px', border: '1px solid rgba(245,158,11,0.25)',
+                                                                    background: 'rgba(245,158,11,0.1)', color: '#f59e0b', fontSize: '0.85rem',
+                                                                    fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s'
+                                                                }}>
+                                                                    ⭐ Write Review
+                                                                </button>
+                                                            )}
                                                             <button onClick={() => openChat(order)} style={{
                                                                 display: 'flex', alignItems: 'center', gap: '8px',
                                                                 padding: '10px 20px', borderRadius: '12px', border: '1px solid rgba(124,58,237,0.25)',
@@ -690,6 +704,17 @@ const OrdersPage: React.FC = () => {
                     );
                 })()}
             </AnimatePresence>
+
+            {/* Review Modal */}
+            {reviewOrder && (
+                <ReviewModal
+                    isOpen={!!reviewOrder}
+                    onClose={() => setReviewOrder(null)}
+                    orderId={reviewOrder.order_id}
+                    items={parseItems(reviewOrder)}
+                    onReviewSubmitted={() => { /* refresh if needed */ }}
+                />
+            )}
         </div>
     );
 };

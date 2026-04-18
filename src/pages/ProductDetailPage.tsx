@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../store';
 import ProductCard from '../components/ProductCard';
+import ReviewSection from '../components/ReviewSection';
 import Footer from '../components/Footer';
 
 const ProductDetailPage: React.FC = () => {
@@ -505,6 +506,11 @@ const ProductDetailPage: React.FC = () => {
                     </div>
                 </motion.div>
             </div>
+
+            {/* Reviews Section */}
+            {product && product.id && (
+                <ReviewSection productId={String(product.id)} productName={product.name} />
+            )}
 
             {/* Related Products */}
             {relatedProducts.length > 0 && (
