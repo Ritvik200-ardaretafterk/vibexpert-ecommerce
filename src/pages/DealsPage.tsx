@@ -27,7 +27,8 @@ const DealsPage: React.FC = () => {
                             badge: p.badge || 'sale',
                             colors: p.colors || [],
                             sizes: p.sizes || [],
-                            inStock: p.inStock !== false
+                            inStock: p.stockQuantity != null ? p.stockQuantity > 0 : p.inStock !== false,
+                            stockQuantity: p.stockQuantity != null ? p.stockQuantity : undefined
                         }));
                     setDeals(mapped);
                 }

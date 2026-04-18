@@ -62,7 +62,8 @@ const ProductDetailPage: React.FC = () => {
                                     badge: p.badge || null,
                                     colors: p.colors || [],
                                     sizes: p.sizes || [],
-                                    inStock: p.inStock !== false,
+                                    inStock: p.stockQuantity != null ? p.stockQuantity > 0 : p.inStock !== false,
+                                    stockQuantity: p.stockQuantity != null ? p.stockQuantity : undefined,
                                     deliveryDays: p.deliveryDays,
                                     deliveryNote: p.deliveryNote
                                 }));
