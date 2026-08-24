@@ -59,9 +59,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         setUser(data.user);
                         setCameFromSSO(true);
 
-                        // Clean the URL (remove sso_token param) and redirect to /shop
-                        const cleanUrl = window.location.origin + '/shop';
-                        window.history.replaceState({}, document.title, cleanUrl);
+                        // Clean the URL (remove sso_token param) but keep buy_now/qty if present
+                        let cleanUrl = window.location.origin + '/shop';
+                        const buyNowId = urlParams.get('buy_now');
+                        if (buyNowId) {
+                            cleanUrl += `?buy_now=${buyNowId}`;
+                            const qty = urlParams.get('qty');
+                            const color = urlParams.get('color');
+                            const size = urlParams.get('size');
+                            if (qty) cleanUrl += `&qty=${qty}`;
+                            if (color) cleanUrl += `&color=${color}`;
+                            if (size) cleanUrl += `&size=${size}`;
+                        }
+                        window.location.href = cleanUrl;
                     }
                 } catch (error) {
                     console.error('SSO verification failed:', error);

@@ -33,6 +33,7 @@ const ShopPage: React.FC = () => {
                         reviews: p.reviews || 0,
                         badge: p.badge || null,
                         colors: p.colors || [],
+                        sizes: p.sizes || [],
                         inStock: p.stockQuantity != null ? p.stockQuantity > 0 : p.inStock !== false,
                         stockQuantity: p.stockQuantity != null ? p.stockQuantity : undefined
                     }));
